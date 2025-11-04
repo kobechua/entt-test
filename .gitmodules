@@ -4,3 +4,6 @@
 [submodule "extern/entt"]
 	path = extern/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "extern/glad"]
+	path = extern/glad
+	url = https://github.com/premake-libs/glad
