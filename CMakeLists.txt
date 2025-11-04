@@ -3,20 +3,25 @@ project(entt-test VERSION 0.1.0)
 
 find_package(OpenGL REQUIRED)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(game src/main.cpp)
 
 add_subdirectory(extern/glfw)
+add_subdirectory(extern/entt)
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(game
    PUBLIC extern/glfw/include
 )
 
-target_link_directories(${PROJECT_NAME}
+target_link_directories(game
    PRIVATE extern/glfw/src
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(game
    glfw
    GL
+   EnTT::EnTT
 )
 

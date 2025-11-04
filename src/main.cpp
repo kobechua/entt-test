@@ -1,8 +1,12 @@
 #include <GLFW/glfw3.h>
+#include <entt/entity/registry.hpp>
 
 int main(void)
 {
-    GLFWwindow* window;
+   entt::registry registry;
+   const auto entity = registry.create();
+
+   GLFWwindow* window;
 
     /* Initialize the library */
     if (!glfwInit())
