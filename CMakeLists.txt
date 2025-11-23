@@ -14,7 +14,7 @@ add_executable(game ${SOURCES} "extern/glad/src/glad.c")
 
 add_subdirectory(extern/glfw)
 add_subdirectory(extern/entt)
-
+add_subdirectory(extern/assimp)
 
 
 target_include_directories(game
@@ -27,8 +27,8 @@ target_link_directories(game
 
 target_link_libraries(game
    glfw
-   GL
    EnTT::EnTT
    glm::glm
+   assimp
 )
 

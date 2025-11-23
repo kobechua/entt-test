@@ -7,3 +7,6 @@
 [submodule "extern/glad"]
 	path = extern/glad
 	url = https://github.com/premake-libs/glad
+[submodule "extern/assimp"]
+	path = extern/assimp
+	url = https://github.com/assimp/assimp.git
