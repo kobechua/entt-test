@@ -74,7 +74,6 @@ int main()
    unsigned int VBO, VAO;
    glGenVertexArrays(1, &VAO);
    glGenBuffers(1, &VBO);
-   // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
    glBindVertexArray(VAO);
 
    glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -83,15 +82,10 @@ int main()
    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
    glEnableVertexAttribArray(0);
 
-   // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
    glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-   // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-   // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
    glBindVertexArray(0); 
 
-
-   // uncomment this call to draw in wireframe polygons.
    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
    // render loop
@@ -109,9 +103,8 @@ int main()
 
       // draw our first triangle
       shader.use();
-      glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+      glBindVertexArray(VAO); 
       glDrawArrays(GL_TRIANGLES, 0, 3);
-      // glBindVertexArray(0); // no need to unbind it every time 
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       // -------------------------------------------------------------------------------
@@ -136,6 +129,11 @@ void processInput(GLFWwindow *window)
 {
    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       glfwSetWindowShouldClose(window, true);
+
+   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+   {
+      std::cout << "W Pressed" << "\n";
+   }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
