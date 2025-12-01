@@ -6,9 +6,11 @@ find_package(glm CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-include_directories( SYSTEM "extern/glad/include")
 
-file(GLOB SOURCES "src/*.cpp")
+include_directories( SYSTEM "extern/glad/include")
+include_directories( SYSTEM "extern/stb")
+
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
 add_executable(game ${SOURCES} "extern/glad/src/glad.c")
 
@@ -19,6 +21,7 @@ add_subdirectory(extern/assimp)
 
 target_include_directories(game
    PUBLIC extern/glfw/include
+   PUBLIC extern/glfw/stb
 )
 
 target_link_directories(game
