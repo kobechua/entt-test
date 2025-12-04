@@ -1,61 +1,86 @@
+// renderer.cpp
 #include "renderer.h"
-#include <algorithm>
 
-Renderer::Renderer()
-{}
+#include <glad/glad.h>
 
-Renderer::~Renderer()
-{}
+// static definitions
+Renderer::SceneData Renderer::s_SceneData{};
+std::map<Renderer::BatchKey, std::vector<Renderer::InstanceData>> Renderer::s_Batches;
 
-void Renderer::queue(Mesh* mesh, const glm::mat4& model = glm::mat4(1.0f))
+void Renderer::BeginScene(const glm::mat4& view, const glm::mat4& projection)
 {
-    auto it = std::find_if(r_bucket.begin(), r_bucket.end(),
-            [&](const Renderable& b) {
-                return b.mesh == mesh;
-            });
-
-    if (it == r_bucket.end()) {
-        Renderable renderable;
-        renderable.mesh = mesh;
-        r_bucket.push_back(std::move(renderable));
-        it = std::prev(r_bucket.end());
-    }
-
-    InstanceData id;
-    id.model = model;
-    it->instances.push_back(id);
-    
+    s_SceneData.View       = view;
+    s_SceneData.Projection = projection;
+    s_Batches.clear();
 }
 
-void Renderer::draw(const glm::mat4& viewProj)
-{    
-    for (auto& bucket : r_bucket) {
-        Shader* shader = bucket.material->shader;
-        shader->use();
-        shader->SetMat4("u_ViewProjection", viewProj);
+void Renderer::Submit(Model* model, Shader* shader, const glm::mat4& modelMatrix)
+{
+    // Every mesh in the model uses the same model matrix for now (like LearnOpenGL)
+    const auto& meshes = model->GetMeshes();
+    for (const auto& m : meshes)
+    {
+        SubmitMesh(const_cast<Mesh*>(&m), shader, modelMatrix);
+    }
+}
 
-        // bind material textures, uniforms
-        bucket.material->Bind();
+void Renderer::SubmitMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
+{
+    BatchKey key{ mesh, shader };
+    InstanceData instance{ modelMatrix };
+    s_Batches[key].push_back(instance);
+}
 
-        // bind VAO (already configured with instance attributes)
-        bucket.mesh->vertexArray->Bind();
+void Renderer::EndScene()
+{
+    Flush();
+    s_Batches.clear();
+}
+
+void Renderer::Flush()
+{
+    Shader* lastShader = nullptr;
+
+    for (auto& pair : s_Batches)
+    {
+        BatchKey key         = pair.first;
+        auto&    instances   = pair.second;
+        Mesh*    mesh        = key.mesh;
+        Shader*  shader      = key.shader;
+
+        if (instances.empty())
+            continue;
+
+        // bind shader only if changed
+        if (shader != lastShader)
+        {
+            shader->use(); // or shader->Use()
+            shader->setMat4("view",       s_SceneData.View);
+            shader->setMat4("projection", s_SceneData.Projection);
+            lastShader = shader;
+        }
+
+        // bind mesh geometry + textures
+        mesh->Bind();
+        mesh->BindTextures(*shader);
 
         // upload instance data to instanceVBO
-        GLuint instanceVBO = bucket.mesh->instanceVBO; // stored in Mesh
-        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->instanceVBO);
         glBufferData(GL_ARRAY_BUFFER,
-                     bucket.instances.size() * sizeof(InstanceData),
-                     bucket.instances.data(),
+                     instances.size() * sizeof(InstanceData),
+                     instances.data(),
                      GL_DYNAMIC_DRAW);
 
+        // draw all instances of this mesh in one call
         glDrawElementsInstanced(
             GL_TRIANGLES,
-            bucket.mesh->indexCount,
+            mesh->IndexCount(),
             GL_UNSIGNED_INT,
-            nullptr,
-            static_cast<GLsizei>(bucket.instances.size())
+            0,
+            static_cast<GLsizei>(instances.size())
         );
     }
 
-    m_Buckets.clear();
+    // unbind VAO
+    glBindVertexArray(0);
 }

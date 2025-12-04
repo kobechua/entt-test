@@ -9,6 +9,8 @@
 
 //LOCAL LIBRARIES
 #include "gfx/shader.h"
+#include "gfx/renderer.h"
+#include "gfx/camera.h"
 #include "core/window.hpp"
 
 //STANDARD
